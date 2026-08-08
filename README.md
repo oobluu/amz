@@ -43,3 +43,7 @@ Step3 查看 Personal 是否生成（验证）
 2. Shortcut key 输入 d，快捷键变成 Ctrl+D
 
 3. 以后选中订单行，直接按 Ctrl+D 一键运行
+
+
+需求文档
+https://eq6lonaelmd.feishu.cn/wiki/KGxNwLvHUiH2PSknjMecS9DunIc?from=from_copylink
