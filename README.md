@@ -47,3 +47,6 @@ Step3 查看 Personal 是否生成（验证）
 
 需求文档
 https://eq6lonaelmd.feishu.cn/wiki/KGxNwLvHUiH2PSknjMecS9DunIc?from=from_copylink
+
+DHL
+https://eq6lonaelmd.feishu.cn/wiki/FizVwrJUWifBL7k4xDQcp80wnte?from=from_copylink
