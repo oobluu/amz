@@ -1,0 +1,166 @@
+// ==UserScript==
+// @name         Temu - Copy Reason for Request
+// @namespace    http://tampermonkey.net/
+// @version      1.2
+// @description  Add copy button after Reason for request text
+// @match        https://*.temu.com/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    function addReasonCopyButton() {
+
+        const labels = document.querySelectorAll('span');
+
+        for (const label of labels) {
+
+            if (label.textContent.trim() !== 'Reason for request:') {
+                continue;
+            }
+
+            const row = label.parentElement?.parentElement;
+
+            if (!row) continue;
+
+            // ==========================================
+            // ① 删除错误位置的旧按钮
+            //    （按钮在 Reason for request: 后面）
+            // ==========================================
+
+            const wrongButton = label.querySelector('.tm-reason-copy-button');
+
+            if (wrongButton) {
+                wrongButton.remove();
+            }
+
+            // ==========================================
+            // ② 找到右侧真正的 Reason 内容
+            // ==========================================
+
+            const reasonElement = [...row.children].find(
+                el => el !== label.parentElement
+            );
+
+            if (!reasonElement) continue;
+
+            const reasonText = reasonElement.textContent
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!reasonText) continue;
+
+            // ==========================================
+            // ③ 如果正确位置已经有按钮，就不重复添加
+            // ==========================================
+
+            if (reasonElement.querySelector('.tm-reason-copy-button')) {
+                continue;
+            }
+
+            // ==========================================
+            // ④ 创建复制按钮
+            // ==========================================
+
+            const button = document.createElement('div');
+
+            button.className = 'tm-reason-copy-button';
+            button.title = 'Copy';
+
+            button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 1024 1024"
+                     fill="currentColor"
+                     width="1em"
+                     height="1em">
+
+                    <path d="M0 0h1024v1024h-1024z"
+                          fill="#ffffff"
+                          stroke="none"
+                          opacity="0"></path>
+
+                    <path d="M785.2 310.4c70.7 0 128 57.3 128 128v341.3c0 70.7-57.3 128-128 128h-341.3c-70.7 0-128-57.3-128-128v-341.3c0-70.7 57.3-128 128-128h341.3z m0 85.3h-341.3c-23.6 0-42.7 19.1-42.7 42.7v341.3c0 23.6 19.1 42.7 42.7 42.7h341.3c23.6 0 42.7-19.1 42.7-42.7v-341.3c0-23.6-19.1-42.7-42.7-42.7z"
+                          stroke="none"></path>
+
+                    <path d="M725.3 115.2c23.6 0 42.7 19.1 42.7 42.7s-19.1 42.7-42.7 42.7h-401.1c-70.7 0-128 57.3-128 128v412c0 23.6-19.1 42.7-42.7 42.7s-42.7-19.1-42.6-42.7v-412c0-117.8 95.5-213.3 213.3-213.4h401.1z"
+                          stroke="none"></path>
+                </svg>
+            `;
+
+            button.style.display = 'inline-flex';
+            button.style.alignItems = 'center';
+            button.style.justifyContent = 'center';
+            button.style.cursor = 'pointer';
+            button.style.marginLeft = '8px';
+            button.style.width = '16px';
+            button.style.height = '16px';
+            button.style.verticalAlign = 'middle';
+            button.style.flexShrink = '0';
+
+            // ==========================================
+            // ⑤ 点击复制
+            // ==========================================
+
+            button.addEventListener('click', async function (event) {
+
+                event.stopPropagation();
+
+                try {
+
+                    await navigator.clipboard.writeText(reasonText);
+
+                    button.title = 'Copied';
+                    button.style.opacity = '0.5';
+
+                    setTimeout(() => {
+                        button.title = 'Copy';
+                        button.style.opacity = '1';
+                    }, 1000);
+
+                } catch (error) {
+
+                    console.error('Copy failed:', error);
+
+                    const textarea = document.createElement('textarea');
+
+                    textarea.value = reasonText;
+                    textarea.style.position = 'fixed';
+                    textarea.style.left = '-9999px';
+
+                    document.body.appendChild(textarea);
+
+                    textarea.select();
+                    document.execCommand('copy');
+
+                    textarea.remove();
+
+                    button.title = 'Copied';
+
+                    setTimeout(() => {
+                        button.title = 'Copy';
+                    }, 1000);
+                }
+            });
+
+            // ==========================================
+            // ⑥ 正确位置：Reason 内容后面
+            // ==========================================
+
+            reasonElement.appendChild(button);
+        }
+    }
+
+    addReasonCopyButton();
+
+    // 监听 Temu 动态加载
+    const observer = new MutationObserver(() => {
+        addReasonCopyButton();
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+})();
